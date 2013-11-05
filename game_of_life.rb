@@ -90,6 +90,14 @@ class Cell
       raise UndefinedCellPosition
     end
   end
+
+  def die!
+    @world.cells -= [self]
+  end
+
+  def dead?
+    not @world.cells.include? self
+  end
 end
 
 class World
@@ -97,12 +105,48 @@ class World
   def initialize
     @cells = []
   end
+
+  def rotate!
+    apply_rules
+  end
+
+  private
+  def apply_rules
+    @cells.each do |cell|
+      rule_1(cell)
+    end
+  end
+
+  def rule_1(cell)
+    if cell.neighbours.count < 2
+      cell.die!
+    end
+  end
 end
 
 describe GameOfLife do
   describe "Rule #1: Any live cell with fewer than two live neighbours dies, as if caused by under-population." do
-    it "a cell with one neighbour should die in the next round" do
+    it "a cell with no neighbour should die in the next round" do
+      world = World.new
+      cell = Cell.new(world)
 
+      world.rotate!
+
+      world.cells.include?(cell).must_equal false
+      world.cells.count.must_equal 0
+    end
+
+    it "cells with one neighbour should die in the next round" do
+      world = World.new
+      cell = Cell.new(world)
+
+      cell.create_neighbour(CellHelpers::UP)
+      neighbour = cell.neighbours.first
+
+      world.rotate!
+
+      cell.dead?.must_equal true
+      neighbour.dead?.must_equal true
     end
   end
 
@@ -121,6 +165,16 @@ describe GameOfLife do
       cell.create_neighbour(CellHelpers::RIGHT)
 
       cell.neighbours.first.must_equal Cell.new(1,0,World.new)
+    end
+
+    it "should not exist in the world if is dead" do
+      world = World.new
+      cell = Cell.new(world)
+      cell.die!
+
+      world.rotate!
+
+      world.cells.include?(cell).must_equal false
     end
   end
 end
