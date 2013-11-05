@@ -200,6 +200,11 @@ describe GameOfLife do
     end
   end
 
+  describe "Rule #4: Any dead cell with exactly three live neighbours becomes a live cell, as if by reproduction." do
+    # OH SHIT!
+    it "should produce a cell when an empty spot has exactly 3 neighbours"
+  end
+
   describe Cell do
     it "should be able to check its number of neighbours" do
       cell = Cell.new(World.new)
