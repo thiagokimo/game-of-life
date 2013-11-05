@@ -119,6 +119,7 @@ class World
     @cells.each do |cell|
       rule_1(cell)
       rule_2(cell)
+      rule_3(cell)
     end
   end
 
@@ -134,6 +135,12 @@ class World
 
     #   end
     # end
+  end
+
+  def rule_3(cell)
+    if cell.neighbours.count > 3
+      cell.die!
+    end
   end
 end
 
@@ -174,6 +181,22 @@ describe GameOfLife do
       world.rotate!
 
       cell.alive?.must_equal true
+    end
+  end
+
+  describe "Rule #3: Any live cell with more than three live neighbours dies, as if by overcrowding." do
+    it "should die if its has more than 3 neighbours" do
+      world = World.new
+      cell = Cell.new(world)
+
+      cell.create_neighbour(CellHelpers::UP)
+      cell.create_neighbour(CellHelpers::DOWN)
+      cell.create_neighbour(CellHelpers::LEFT)
+      cell.create_neighbour(CellHelpers::RIGHT)
+
+      world.rotate!
+
+      cell.dead?.must_equal true
     end
   end
 
