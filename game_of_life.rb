@@ -91,6 +91,10 @@ class Cell
     end
   end
 
+  def alive?
+    @world.cells.include? self
+  end
+
   def die!
     @world.cells -= [self]
   end
@@ -114,6 +118,7 @@ class World
   def apply_rules
     @cells.each do |cell|
       rule_1(cell)
+      rule_2(cell)
     end
   end
 
@@ -121,6 +126,14 @@ class World
     if cell.neighbours.count < 2
       cell.die!
     end
+  end
+
+  def rule_2(cell)
+    # @cells.each do |cell|
+    #   if cell.neighbours.count == 2 or cell.neighbours.count == 3
+
+    #   end
+    # end
   end
 end
 
@@ -147,6 +160,20 @@ describe GameOfLife do
 
       cell.dead?.must_equal true
       neighbour.dead?.must_equal true
+    end
+  end
+
+  describe "Rule #2: Any live cell with two or three live neighbours lives on to the next generation." do
+    it "a cell with two neighbours, one on the left and the other on the right, should live in the next round" do
+      world = World.new
+      cell = Cell.new(world)
+
+      cell.create_neighbour(CellHelpers::LEFT)
+      cell.create_neighbour(CellHelpers::RIGHT)
+
+      world.rotate!
+
+      cell.alive?.must_equal true
     end
   end
 
