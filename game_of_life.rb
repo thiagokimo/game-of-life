@@ -1,0 +1,127 @@
+require 'minitest/autorun'
+
+class GameOfLifeException < StandardError ; end
+class UndefinedCellPosition < GameOfLifeException ; end
+class UndefinedWorldForCell < GameOfLifeException ; end
+
+module CellHelpers
+  UP_LEFT = 0
+  UP = 1
+  UP_RIGHT = 2
+  LEFT = 3
+  RIGHT = 4
+  DOWN_LEFT = 5
+  DOWN = 6
+  DOWN_RIGHT = 7
+end
+
+class GameOfLife
+end
+
+class Cell
+  attr_reader :x,:y, :neighbours
+  attr_accessor :world
+
+  def initialize(x=0,y=0,world)
+    @x,@y = x,y
+
+    raise UndefinedWorldForCell unless world
+    @world = world
+    @world.cells << self
+  end
+
+  def ==(otherCell)
+    (self.x == otherCell.x) and (self.y == otherCell.y)
+  end
+
+  def neighbours
+    @neighbours = []
+    @world.cells.each do |cell|
+
+      # CellHelpers::UP_LEFT
+      if self.x == cell.x+1 and self.y == cell.y-1
+        @neighbours << cell
+      # CellHelpers::UP
+      elsif self.x == cell.x and self.y == cell.y-1
+        @neighbours << cell
+        # CellHelpers::UP_RIGHT
+      elsif self.x == cell.x-1 and self.y == cell.y-1
+        @neighbours << cell
+      # CellHelpers::LEFT
+      elsif self.x == cell.x+1 and self.y == cell.y
+        @neighbours << cell
+      # CellHelpers::RIGHT
+      elsif self.x == cell.x-1 and self.y == cell.y
+        @neighbours << cell
+      # CellHelpers::DOWN_LEFT
+      elsif self.x == cell.x+1 and self.y == cell.y+1
+        @neighbours << cell
+      # CellHelpers::DOWN
+      elsif self.x == cell.x and self.y == cell.y+1
+        @neighbours << cell
+      # CellHelpers::DOWN_RIGHT
+      elsif self.x == cell.x-1 and self.y == cell.y+1
+        @neighbours << cell
+      end
+    end
+
+    @neighbours
+  end
+
+  def create_neighbour(position)
+    case position
+      when CellHelpers::UP_LEFT
+        Cell.new(self.x-1,self.y+1,@world)
+      when CellHelpers::UP
+        Cell.new(self.x,self.y+1,@world)
+      when CellHelpers::UP_RIGHT
+        Cell.new(self.x+1,self.y+1,@world)
+      when CellHelpers::LEFT
+        Cell.new(self.x-1,self.y,@world)
+      when CellHelpers::RIGHT
+        Cell.new(self.x+1,self.y,@world)
+      when CellHelpers::DOWN_LEFT
+        Cell.new(self.x-1,self.y-1,@world)
+      when CellHelpers::DOWN
+        Cell.new(self.x,self.y-1,@world)
+      when CellHelpers::DOWN_RIGHT
+        Cell.new(self.x+1,self.y-1,@world)
+    else
+      raise UndefinedCellPosition
+    end
+  end
+end
+
+class World
+  attr_accessor :cells
+  def initialize
+    @cells = []
+  end
+end
+
+describe GameOfLife do
+  describe "Rule #1: Any live cell with fewer than two live neighbours dies, as if caused by under-population." do
+    it "a cell with one neighbour should die in the next round" do
+
+    end
+  end
+
+  describe Cell do
+    it "should be able to check its number of neighbours" do
+      cell = Cell.new(World.new)
+
+      cell.create_neighbour(CellHelpers::UP)
+      cell.create_neighbour(CellHelpers::DOWN)
+
+      cell.neighbours.count.must_equal 2
+    end
+
+    it "must have the correct neighbours" do
+      cell = Cell.new(World.new)
+      cell.create_neighbour(CellHelpers::RIGHT)
+
+      cell.neighbours.first.must_equal Cell.new(1,0,World.new)
+    end
+  end
+end
+
