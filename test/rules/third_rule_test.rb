@@ -1,4 +1,4 @@
-require 'test_helper'
+require_relative '../test_helper'
 
 module GameOfLife
   describe "Rule #3: Any live cell with more than three live neighbours dies, as if by overcrowding." do

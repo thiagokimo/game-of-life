@@ -1,4 +1,4 @@
-require 'test_helper'
+require_relative '../test_helper'
 
 module GameOfLife
   describe "Rule #1: Any live cell with fewer than two live neighbours dies, as if caused by under-population." do

@@ -1,4 +1,4 @@
-require 'test_helper'
+require_relative '../test_helper'
 
 module GameOfLife
   describe "Rule #2: Any live cell with two or three live neighbours lives on to the next generation." do

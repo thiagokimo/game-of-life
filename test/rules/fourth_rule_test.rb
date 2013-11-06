@@ -1,4 +1,4 @@
-require 'test_helper'
+require_relative '../test_helper'
 
 module GameOfLife
   describe "Rule #4: Any dead cell with exactly three live neighbours becomes a live cell, as if by reproduction." do
