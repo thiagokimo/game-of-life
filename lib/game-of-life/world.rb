@@ -93,7 +93,7 @@ module GameOfLife
 
     def apply_rule_4
       dead_cells.each do |cell|
-        revive(cell) if cell.dead? and live_neighbours_of(cell) == 3
+        revive(cell) if cell.dead? and live_neighbours_of(cell).count == 3
       end
     end
   end
