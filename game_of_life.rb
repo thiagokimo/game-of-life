@@ -1,127 +1,122 @@
 require 'minitest/autorun'
 
-class GameOfLifeException < StandardError ; end
-class UndefinedCellPosition < GameOfLifeException ; end
-class UndefinedWorldForCell < GameOfLifeException ; end
-
-module CellHelpers
-  UP_LEFT = 0
-  UP = 1
-  UP_RIGHT = 2
-  LEFT = 3
-  RIGHT = 4
-  DOWN_LEFT = 5
-  DOWN = 6
-  DOWN_RIGHT = 7
-end
-
-class GameOfLife
-end
-
 class Cell
-  attr_reader :x,:y, :neighbours
-  attr_accessor :world
-
-  def initialize(x=0,y=0,world)
+  attr_accessor :x, :y, :alive, :neighbours
+  def initialize(x=0,y=0,alive=true)
     @x,@y = x,y
-
-    raise UndefinedWorldForCell unless world
-    @world = world
-    @world.cells << self
-  end
-
-  def ==(otherCell)
-    (self.x == otherCell.x) and (self.y == otherCell.y)
+    @alive = alive
   end
 
   def neighbours
-    @neighbours = []
-    @world.cells.each do |cell|
-
-      # CellHelpers::UP_LEFT
-      if self.x == cell.x+1 and self.y == cell.y-1
-        @neighbours << cell
-      # CellHelpers::UP
-      elsif self.x == cell.x and self.y == cell.y-1
-        @neighbours << cell
-        # CellHelpers::UP_RIGHT
-      elsif self.x == cell.x-1 and self.y == cell.y-1
-        @neighbours << cell
-      # CellHelpers::LEFT
-      elsif self.x == cell.x+1 and self.y == cell.y
-        @neighbours << cell
-      # CellHelpers::RIGHT
-      elsif self.x == cell.x-1 and self.y == cell.y
-        @neighbours << cell
-      # CellHelpers::DOWN_LEFT
-      elsif self.x == cell.x+1 and self.y == cell.y+1
-        @neighbours << cell
-      # CellHelpers::DOWN
-      elsif self.x == cell.x and self.y == cell.y+1
-        @neighbours << cell
-      # CellHelpers::DOWN_RIGHT
-      elsif self.x == cell.x-1 and self.y == cell.y+1
-        @neighbours << cell
-      end
-    end
-
-    @neighbours
+    []
   end
 
-  def create_neighbour(position)
-    case position
-      when CellHelpers::UP_LEFT
-        Cell.new(self.x-1,self.y+1,@world)
-      when CellHelpers::UP
-        Cell.new(self.x,self.y+1,@world)
-      when CellHelpers::UP_RIGHT
-        Cell.new(self.x+1,self.y+1,@world)
-      when CellHelpers::LEFT
-        Cell.new(self.x-1,self.y,@world)
-      when CellHelpers::RIGHT
-        Cell.new(self.x+1,self.y,@world)
-      when CellHelpers::DOWN_LEFT
-        Cell.new(self.x-1,self.y-1,@world)
-      when CellHelpers::DOWN
-        Cell.new(self.x,self.y-1,@world)
-      when CellHelpers::DOWN_RIGHT
-        Cell.new(self.x+1,self.y-1,@world)
-    else
-      raise UndefinedCellPosition
-    end
+  def alive?
+    self.alive
+  end
+
+  def dead?
+    not alive?
+  end
+
+  def die!
+    @alive = false
   end
 end
 
 class World
   attr_accessor :cells
+
   def initialize
     @cells = []
   end
+
+  def rotate!
+    apply_rule_1
+  end
+
+  def create_cell(cell)
+    @cells << cell
+  end
+
+  private
+  def apply_rule_1
+    @cells.each do |cell|
+      cell.die! if cell.alive? and cell.neighbours.count < 2
+    end
+  end
 end
 
-describe GameOfLife do
+describe "The Game of Life" do
   describe "Rule #1: Any live cell with fewer than two live neighbours dies, as if caused by under-population." do
-    it "a cell with one neighbour should die in the next round" do
+    it "cells with 1 neighbour dies in the next day" do
+      world = World.new
+      world.create_cell(Cell.new(1,1))
+      world.create_cell(Cell.new(2,1))
 
-    end
-  end
+      world.rotate!
 
-  describe Cell do
-    it "should be able to check its number of neighbours" do
-      cell = Cell.new(World.new)
-
-      cell.create_neighbour(CellHelpers::UP)
-      cell.create_neighbour(CellHelpers::DOWN)
-
-      cell.neighbours.count.must_equal 2
-    end
-
-    it "must have the correct neighbours" do
-      cell = Cell.new(World.new)
-      cell.create_neighbour(CellHelpers::RIGHT)
-
-      cell.neighbours.first.must_equal Cell.new(1,0,World.new)
+      world.cells.each do |cell|
+        cell.alive?.must_equal false
+      end
     end
   end
 end
+
+describe World do
+  it "should have a collection of cells" do
+    world = World.new
+    world.cells.wont_be_nil
+  end
+
+  it "should be able to create cells" do
+    world = World.new
+
+    random_x = rand(11)
+    random_y = rand(11)
+    cell = Cell.new(random_x,random_y)
+
+    world.create_cell(cell)
+    world.cells.must_include(cell)
+  end
+end
+
+describe Cell do
+
+  describe "coordinates" do
+
+    it "coordinates" do
+      cell = Cell.new
+      cell.x.wont_be_nil
+      cell.y.wont_be_nil
+    end
+    it "should store coordinates" do
+      random_x = rand(11)
+      random_y = rand(11)
+
+      cell = Cell.new(random_x,random_y)
+
+      cell.x.must_equal random_x
+      cell.y.must_equal random_y
+    end
+  end
+
+  it "should be able to die" do
+    cell = Cell.new
+
+    cell.die!
+    cell.dead?.must_equal true
+  end
+
+  it "should be dead or alive" do
+    cell = Cell.new
+    cell.alive.wont_be_nil
+  end
+
+  it "must have neighbours cells" do
+    cell = Cell.new
+    cell.neighbours.wont_be_nil
+  end
+end
+
 
