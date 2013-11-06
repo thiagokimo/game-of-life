@@ -2,6 +2,8 @@ require 'minitest/autorun'
 
 class GameOfLifeException < StandardError ; end
 class CellAlreadyExistsInTheWorldException < GameOfLifeException ; end
+class CellIsAlreadyDeadException < GameOfLifeException ; end
+class CellIsAlreadyAliveException < GameOfLifeException ; end
 
 class Cell
   attr_accessor :x, :y, :alive, :neighbours
@@ -26,6 +28,10 @@ class Cell
     not alive?
   end
 
+  def reborn!
+    @alive = true
+  end
+
   def die!
     @alive = false
   end
@@ -38,6 +44,19 @@ class World
     @cells = []
   end
 
+  def dead_cells
+    @cells - live_cells
+  end
+
+  def live_cells
+    live_cells = []
+
+    @cells.each do |cell|
+      live_cells << cell if cell.alive?
+    end
+
+    live_cells
+  end
 
   # up_left   | up   | up_right
   # ----------|------|-----------
@@ -73,29 +92,46 @@ class World
     apply_rule_1
     apply_rule_2
     apply_rule_3
+    apply_rule_4
   end
 
-  def create_cell(cell)
+  def create(cell)
     raise CellAlreadyExistsInTheWorldException if exist?(cell)
     @cells << cell
   end
 
+  def revive(cell)
+    raise CellIsAlreadyAliveException if exist?(cell) and cell.alive?
+    @cells[@cells.index(cell)].reborn!
+  end
+
+  def kill(cell)
+    raise CellIsAlreadyDeadException if exist?(cell) and cell.dead?
+    @cells[@cells.index(cell)].die!
+  end
+
   private
   def apply_rule_1
-    @cells.each do |cell|
-      cell.die! if cell.alive? and live_neighbours_of(cell).count < 2
+    live_cells.each do |cell|
+      kill(cell) if cell.alive? and live_neighbours_of(cell).count < 2
     end
   end
 
   def apply_rule_2
-    @cells.each do |cell|
-      cell.alive = true if live_neighbours_of(cell).count == 2 or live_neighbours_of(cell).count == 3
-    end
+    # live_cells.each do |cell|
+    #   revive(cell) if live_neighbours_of(cell).count == 2 or live_neighbours_of(cell).count == 3
+    # end
   end
 
   def apply_rule_3
-    @cells.each do |cell|
-      cell.die! if cell.alive? and live_neighbours_of(cell).count > 3
+    live_cells.each do |cell|
+      kill(cell) if cell.alive? and live_neighbours_of(cell).count > 3
+    end
+  end
+
+  def apply_rule_4
+    dead_cells.each do |cell|
+      revive(cell) if cell.dead? and live_neighbours_of(cell) == 3
     end
   end
 end
@@ -104,11 +140,11 @@ describe "The Game of Life" do
   describe "Rule #1: Any live cell with fewer than two live neighbours dies, as if caused by under-population." do
     it "cells with 1 neighbour dies in the next day" do
       world = World.new
-      world.create_cell(Cell.new(1,1))
-      world.create_cell(Cell.new(2,1))
+      world.create(Cell.new(1,1))
+      world.create(Cell.new(2,1))
 
-      world.create_cell(Cell.new(10,10))
-      world.create_cell(Cell.new(10,11))
+      world.create(Cell.new(10,10))
+      world.create(Cell.new(10,11))
 
       world.rotate!
 
@@ -119,7 +155,7 @@ describe "The Game of Life" do
 
     it "a cell with no live neighbours should die in the next day" do
       world = World.new
-      world.create_cell(Cell.new(22,22))
+      world.create(Cell.new(22,22))
 
       world.rotate!
 
@@ -138,9 +174,9 @@ describe "The Game of Life" do
       cell_1 = Cell.new(0,0)
       cell_3 = Cell.new(1,0)
 
-      world.create_cell(cell_1)
-      world.create_cell(cell_2)
-      world.create_cell(cell_3)
+      world.create(cell_1)
+      world.create(cell_2)
+      world.create(cell_3)
 
       world.rotate!
 
@@ -159,10 +195,10 @@ describe "The Game of Life" do
       cell_3 = Cell.new(1,0)
       cell_4 = Cell.new(-1,-1)
 
-      world.create_cell(cell_1)
-      world.create_cell(cell_2)
-      world.create_cell(cell_3)
-      world.create_cell(cell_4)
+      world.create(cell_1)
+      world.create(cell_2)
+      world.create(cell_3)
+      world.create(cell_4)
 
       world.rotate!
 
@@ -185,11 +221,11 @@ describe "The Game of Life" do
       cell_4 = Cell.new(-1,-1)
       cell_5 = Cell.new(0,-1)
 
-      world.create_cell(cell_1)
-      world.create_cell(cell_2)
-      world.create_cell(cell_3)
-      world.create_cell(cell_4)
-      world.create_cell(cell_5)
+      world.create(cell_1)
+      world.create(cell_2)
+      world.create(cell_3)
+      world.create(cell_4)
+      world.create(cell_5)
 
       world.rotate!
 
@@ -217,24 +253,80 @@ describe "The Game of Life" do
       cell_8 = Cell.new(0,1)
       cell_9 = Cell.new(1,1)
 
-      world.create_cell(cell_1)
-      world.create_cell(cell_2)
-      world.create_cell(cell_3)
-      world.create_cell(cell_4)
-      world.create_cell(cell_5)
-      world.create_cell(cell_6)
-      world.create_cell(cell_7)
-      world.create_cell(cell_8)
-      world.create_cell(cell_9)
+      world.create(cell_1)
+      world.create(cell_2)
+      world.create(cell_3)
+      world.create(cell_4)
+      world.create(cell_5)
+      world.create(cell_6)
+      world.create(cell_7)
+      world.create(cell_8)
+      world.create(cell_9)
 
       world.rotate!
 
       world.cells.first.dead?.must_equal true
     end
   end
+
+  describe "Rule #4: Any dead cell with exactly three live neighbours becomes a live cell, as if by reproduction." do
+    it "a dead cell with 3 neighbours will reborn in the next day" do
+      world = World.new
+
+      # (-1,1) |        |
+      # cell_7 |        |
+      # -------|--------|-------
+      # (-1,0) |  (0,0) |
+      # cell_2 | cell_1 |
+      # -------|--------|-------
+      # cell_4 |        |
+      # (-1,-1)|        |
+      cell_1 = Cell.new(0,0,false)
+      cell_2 = Cell.new(-1,0)
+      cell_4 = Cell.new(-1,-1)
+      cell_7 = Cell.new(-1,1)
+
+      world.create(cell_1)
+      world.create(cell_2)
+      world.create(cell_4)
+      world.create(cell_7)
+
+      world.rotate!
+
+      world.cells.first.alive?.must_equal true
+    end
+  end
 end
 
 describe World do
+
+  it "should be able to give all its dead cells" do
+    world = World.new
+
+    cell_1 = Cell.new(0,0,false)
+    cell_2 = Cell.new(1,0)
+    cell_3 = Cell.new(0,1,false)
+
+    world.create(cell_1)
+    world.create(cell_2)
+    world.create(cell_3)
+
+    world.dead_cells.count.must_equal 2
+  end
+
+  it "should be able to give all its live cells" do
+    world = World.new
+
+    cell_1 = Cell.new(0,0,false)
+    cell_2 = Cell.new(1,0)
+    cell_3 = Cell.new(0,1,false)
+
+    world.create(cell_1)
+    world.create(cell_2)
+    world.create(cell_3)
+
+    world.live_cells.count.must_equal 1
+  end
 
   it "should be able to count live neighbours of a cell" do
     world = World.new
@@ -243,9 +335,9 @@ describe World do
     cell_2 = Cell.new(1,0)
     cell_3 = Cell.new(0,1)
 
-    world.create_cell(cell_1)
-    world.create_cell(cell_2)
-    world.create_cell(cell_3)
+    world.create(cell_1)
+    world.create(cell_2)
+    world.create(cell_3)
 
     world.live_neighbours_of(cell_1).count.must_equal 2
   end
@@ -254,11 +346,11 @@ describe World do
     it "should return true if a cell with certain coordinates exists in its collection of cells" do
       world = World.new
 
-      world.create_cell(Cell.new(1,2))
-      world.create_cell(Cell.new(3,4))
-      world.create_cell(Cell.new(5,6))
-      world.create_cell(Cell.new(7,8))
-      world.create_cell(Cell.new(9,0))
+      world.create(Cell.new(1,2))
+      world.create(Cell.new(3,4))
+      world.create(Cell.new(5,6))
+      world.create(Cell.new(7,8))
+      world.create(Cell.new(9,0))
 
       world.exist?(Cell.new(1,2)).must_equal true
     end
@@ -266,11 +358,11 @@ describe World do
     it "should return false if a cell with certain coordinates don't exists in its collection of cells" do
       world = World.new
 
-      world.create_cell(Cell.new(1,2))
-      world.create_cell(Cell.new(3,4))
-      world.create_cell(Cell.new(5,6))
-      world.create_cell(Cell.new(7,8))
-      world.create_cell(Cell.new(9,0))
+      world.create(Cell.new(1,2))
+      world.create(Cell.new(3,4))
+      world.create(Cell.new(5,6))
+      world.create(Cell.new(7,8))
+      world.create(Cell.new(9,0))
 
       world.exist?(Cell.new(300,400)).must_equal false
     end
@@ -281,7 +373,47 @@ describe World do
     world.cells.wont_be_nil
   end
 
-  describe "#create_cell" do
+  describe "#revive" do
+    it "should revive a dead cell" do
+      world = World.new
+      cell = Cell.new(0,0,false)
+
+      world.create(cell)
+      world.revive(cell)
+
+      world.cells.first.alive?.must_equal true
+    end
+
+    it "must raise an exception if trying to revive a live cell" do
+      world = World.new
+      cell = Cell.new
+
+      world.create(cell)
+      lambda { world.revive(cell) }.must_raise(CellIsAlreadyAliveException)
+    end
+  end
+
+  describe "#kill" do
+    it "should be able to kill a cell" do
+      world = World.new
+      cell = Cell.new(0,0)
+
+      world.create(cell)
+      world.kill(cell)
+
+      world.cells.first.dead?.must_equal true
+    end
+
+    it "should raise an exception is trying to kill a cell that is already dead" do
+      world = World.new
+      cell = Cell.new(0,0,false)
+
+      world.create(cell)
+      lambda { world.kill(cell) }.must_raise(CellIsAlreadyDeadException)
+    end
+  end
+
+  describe "#create" do
     it "should be able to create cells" do
       world = World.new
 
@@ -289,7 +421,7 @@ describe World do
       random_y = rand(11)
       cell = Cell.new(random_x,random_y)
 
-      world.create_cell(cell)
+      world.create(cell)
       world.cells.must_include(cell)
     end
 
@@ -297,7 +429,7 @@ describe World do
       world = World.new
       cell = Cell.new
 
-      lambda { world.create_cell(cell) }.must_be_silent
+      lambda { world.create(cell) }.must_be_silent
     end
 
     it "should not allow adding cells with the same coordinates" do
@@ -306,8 +438,8 @@ describe World do
       cell = Cell.new(1,1)
       same_cell = Cell.new(1,1)
 
-      world.create_cell(cell)
-      lambda { world.create_cell(same_cell)}.must_raise(CellAlreadyExistsInTheWorldException)
+      world.create(cell)
+      lambda { world.create(same_cell)}.must_raise(CellAlreadyExistsInTheWorldException)
     end
   end
 end
