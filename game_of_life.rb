@@ -365,4 +365,3 @@ describe Cell do
   end
 end
 
-
