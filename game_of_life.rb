@@ -38,6 +38,12 @@ class World
     @cells = []
   end
 
+
+  # up_left   | up   | up_right
+  # ----------|------|-----------
+  # left      | cell | right
+  # ----------|------|-----------
+  # down_left | down | down_right
   def live_neighbours_of(cell)
     live_neighbours = []
 
@@ -131,9 +137,29 @@ describe "The Game of Life" do
 
       world.rotate!
 
-      world.cells[0].alive?.must_equal true
-      world.cells[1].dead?.must_equal true
-      world.cells[2].dead?.must_equal true
+      world.cells.first.alive?.must_equal true
+    end
+
+    it "a cell with 3 live neighbours will be alive in the next day" do
+      world = World.new
+
+      # (-1,0) |  (0,0) |  (1,0)
+      # cell_2 | cell_1 | cell_3
+      # cell_4 |        |
+      # (-1,-1)
+      cell_1 = Cell.new(0,0)
+      cell_2 = Cell.new(-1,0)
+      cell_3 = Cell.new(1,0)
+      cell_4 = Cell.new(-1,-1)
+
+      world.create_cell(cell_1)
+      world.create_cell(cell_2)
+      world.create_cell(cell_3)
+      world.create_cell(cell_4)
+
+      world.rotate!
+
+      world.cells.first.alive?.must_equal true
     end
   end
 end
