@@ -20,10 +20,11 @@ end
 
 class Cell
   attr_reader :x,:y, :neighbours
-  attr_accessor :world
+  attr_accessor :world, :alive
 
-  def initialize(x=0,y=0,world)
+  def initialize(x=0,y=0,alive=true,world)
     @x,@y = x,y
+    @alive = true
 
     raise UndefinedWorldForCell unless world
     @world = world
@@ -92,15 +93,16 @@ class Cell
   end
 
   def alive?
-    @world.cells.include? self
+    @alive
   end
 
   def die!
-    @world.cells -= [self]
+    # hash = Hash[@world.cells.map.with_index.to_a]
+    @alive = false
   end
 
   def dead?
-    not @world.cells.include? self
+    not alive?
   end
 end
 
@@ -120,6 +122,7 @@ class World
       rule_1(cell)
       rule_2(cell)
       rule_3(cell)
+      rule_4(cell)
     end
   end
 
@@ -130,11 +133,11 @@ class World
   end
 
   def rule_2(cell)
-    # @cells.each do |cell|
-    #   if cell.neighbours.count == 2 or cell.neighbours.count == 3
-
-    #   end
-    # end
+    @cells.each do |cell|
+      if cell.neighbours.count == 2 or cell.neighbours.count == 3
+        cell.alive = true
+      end
+    end
   end
 
   def rule_3(cell)
@@ -142,6 +145,13 @@ class World
       cell.die!
     end
   end
+
+  def rule_4(cell)
+    if cell.neighbours.count == 3
+      cell.alive = true
+    end
+  end
+
 end
 
 describe GameOfLife do
@@ -152,8 +162,7 @@ describe GameOfLife do
 
       world.rotate!
 
-      world.cells.include?(cell).must_equal false
-      world.cells.count.must_equal 0
+      world.cells.first.dead?.must_equal true
     end
 
     it "cells with one neighbour should die in the next round" do
@@ -201,8 +210,19 @@ describe GameOfLife do
   end
 
   describe "Rule #4: Any dead cell with exactly three live neighbours becomes a live cell, as if by reproduction." do
-    # OH SHIT!
-    it "should produce a cell when an empty spot has exactly 3 neighbours"
+    it "should revive a cell when it has exactly 3 live neighbours" do
+      world = World.new
+      cell = Cell.new(world)
+
+      cell.create_neighbour(CellHelpers::UP)
+      cell.create_neighbour(CellHelpers::UP_LEFT)
+      cell.create_neighbour(CellHelpers::UP_RIGHT)
+
+      cell.die!
+      world.rotate!
+
+      cell.alive?.must_equal true
+    end
   end
 
   describe Cell do
@@ -222,14 +242,14 @@ describe GameOfLife do
       cell.neighbours.first.must_equal Cell.new(1,0,World.new)
     end
 
-    it "should not exist in the world if is dead" do
+    it "should die" do
       world = World.new
       cell = Cell.new(world)
       cell.die!
 
       world.rotate!
 
-      world.cells.include?(cell).must_equal false
+      world.cells.first.alive?.must_equal false
     end
   end
 end
