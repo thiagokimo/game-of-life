@@ -42,6 +42,13 @@ module GameOfLife
       cell.dead?.must_equal true
     end
 
+    it "should be able to reborn" do
+      cell = Cell.new(0,0,false)
+
+      cell.reborn!
+      cell.alive?.must_equal true
+    end
+
     it "should be dead or alive" do
       cell = Cell.new
       cell.alive.wont_be_nil
