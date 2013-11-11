@@ -23,6 +23,14 @@ module GameOfLife
       live_cells
     end
 
+    def seed!
+      for x in (0).upto(@width-1) do
+        for y in (0).upto(@height-1) do
+          @cells << Cell.new(x,y,[true,false].sample)
+        end
+      end
+    end
+
     # up_left   | up   | up_right
     # ----------|------|-----------
     # left      | cell | right

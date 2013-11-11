@@ -3,6 +3,16 @@ require_relative '../../test_helper'
 module GameOfLife
   describe World do
 
+    it "should be able to seed the world randomly" do
+      world = World.new
+
+      world.seed!
+
+      world.cells.wont_be_nil
+      world.dead_cells.wont_be_nil
+      world.live_cells.wont_be_nil
+    end
+
     it "should be instantiated with limits" do
       world = World.new
 
