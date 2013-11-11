@@ -1,8 +1,11 @@
 module GameOfLife
   class World
     attr_accessor :cells
+    attr_reader :width, :height
 
-    def initialize
+    def initialize(width=640, height=480, allow_negative_cells=true)
+      @width, @height = width, height
+      @negative = allow_negative_cells
       @cells = []
     end
 
@@ -59,6 +62,7 @@ module GameOfLife
 
     def create(cell)
       raise CellAlreadyExistsInTheWorldException if exist?(cell)
+      raise CellInvalidCoordinatesException if outside_of_the_world?(cell) or negative_coordinates?(cell)
       @cells << cell
     end
 
@@ -96,6 +100,13 @@ module GameOfLife
         revive(cell) if cell.dead? and live_neighbours_of(cell).count == 3
       end
     end
-  end
 
+    def outside_of_the_world?(cell)
+      (cell.x > @width) or (cell.y > @height)
+    end
+
+    def negative_coordinates?(cell)
+      (cell.x < 0) or (cell.y < 0) and not @negative
+    end
+  end
 end

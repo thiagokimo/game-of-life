@@ -2,6 +2,14 @@ require_relative '../../test_helper'
 
 module GameOfLife
   describe World do
+
+    it "should be instantiated with limits" do
+      world = World.new
+
+      world.width.wont_be_nil
+      world.height.wont_be_nil
+    end
+
     it "should be able to give all its dead cells" do
       world = World.new
 
@@ -142,6 +150,22 @@ module GameOfLife
 
         world.create(cell)
         lambda { world.create(same_cell)}.must_raise(CellAlreadyExistsInTheWorldException)
+      end
+
+      it "should raise an exception when creating a cell that its coordinates are outsite of the limits of the world" do
+        world = World.new
+
+        cell = Cell.new(641,481)
+
+        lambda { world.create(cell) }.must_raise(CellInvalidCoordinatesException)
+      end
+
+      it "should raise an exception when creating a cell with negative coordinates in a world that only allow positive coorditanes cells" do
+        world = World.new(20,20,false)
+
+        negative_coordinates_cell = Cell.new(-1,-1)
+
+        lambda { world.create(negative_coordinates_cell) }.must_raise(CellInvalidCoordinatesException)
       end
     end
   end
