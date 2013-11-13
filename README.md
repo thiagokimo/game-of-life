@@ -1,7 +1,7 @@
 The Game of Life
 ============
 
-Implementing Conway's Game of Life the TDD way :)
+Implementing Conway's Game of Life the TDD way, with Ruby :)
 I used **minitest** for testing and **gosu** for displaying the game on the screen.
 
 ##Installing
