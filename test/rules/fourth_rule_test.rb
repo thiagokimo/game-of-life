@@ -2,30 +2,23 @@ require_relative '../test_helper'
 
 module GameOfLife
   describe "Rule #4: Any dead cell with exactly three live neighbours becomes a live cell, as if by reproduction." do
-    it "a dead cell with 3 neighbours will reborn in the next day" do
-      world = World.new
+    it "a dead cell with 3 live neighbours will reborn in the next day" do
+      world = World.new(3,3)
 
-      # (-1,1) |        |
-      # cell_7 |        |
-      # -------|--------|-------
-      # (-1,0) |  (0,0) |
-      # cell_2 | cell_1 |
-      # -------|--------|-------
-      # cell_4 |        |
-      # (-1,-1)|        |
-      cell_1 = Cell.new(0,0,false)
-      cell_2 = Cell.new(-1,0)
-      cell_4 = Cell.new(-1,-1)
-      cell_7 = Cell.new(-1,1)
+      # (0,2) (1,2) (2,2)
+      # (0,1) (1,1) (2,1)
+      # (0,0) (1,0) (2,0)
 
-      world.create(cell_1)
-      world.create(cell_2)
-      world.create(cell_4)
-      world.create(cell_7)
+      world.kill(1,2)
+      world.kill(2,2)
+      world.kill(2,1)
+      world.kill(2,0)
+      world.kill(1,0)
+      world.kill(1,1)
 
       world.rotate!
 
-      world.cells.first.alive?.must_equal true
+      world.get(1,1).alive?.must_equal true
     end
   end
 end
