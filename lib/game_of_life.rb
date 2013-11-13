@@ -1,6 +1,7 @@
 require_relative 'game-of-life/exceptions'
 require_relative 'game-of-life/cell'
 require_relative 'game-of-life/world'
+require_relative 'game-of-life/version'
 require 'gosu'
 
 module GameOfLife
@@ -29,7 +30,6 @@ module GameOfLife
     end
 
     def draw
-      draw_background
       draw_cells
     end
 
@@ -37,30 +37,21 @@ module GameOfLife
       true
     end
 
-    def draw_background
-      draw_quad(
-        0,0,@white_color,
-        @width,0,@white_color,
-        @width,@height,@white_color,
-        0,@height,@white_color
-      )
-    end
-
     def draw_cells
       @world.cells.each do |cell|
         if cell.alive?
-          draw_quad(
-            cell.x * @column_width, cell.y * @row_height, @black_color,
-            cell.x * @column_width + @column_width, cell.y * @row_height, @black_color,
-            cell.x * @column_width + @column_width, cell.y * @row_height + @row_height, @black_color,
-            cell.x * @column_width, cell.y * @row_height + @row_height, @black_color
-          )
-        else
           draw_quad(
             cell.x * @column_width, cell.y * @row_height, @white_color,
             cell.x * @column_width + @column_width, cell.y * @row_height, @white_color,
             cell.x * @column_width + @column_width, cell.y * @row_height + @row_height, @white_color,
             cell.x * @column_width, cell.y * @row_height + @row_height, @white_color
+          )
+        else
+          draw_quad(
+            cell.x * @column_width, cell.y * @row_height, @black_color,
+            cell.x * @column_width + @column_width, cell.y * @row_height, @black_color,
+            cell.x * @column_width + @column_width, cell.y * @row_height + @row_height, @black_color,
+            cell.x * @column_width, cell.y * @row_height + @row_height, @black_color
           )
         end
       end

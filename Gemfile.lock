@@ -1,10 +1,18 @@
+PATH
+  remote: .
+  specs:
+    game-of-life (0.1.0)
+
 GEM
   remote: https://rubygems.org/
   specs:
     gosu (0.7.50)
+    rake (0.9.2.2)
 
 PLATFORMS
   ruby
 
 DEPENDENCIES
+  game-of-life!
   gosu
+  rake
