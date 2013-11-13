@@ -2,7 +2,5 @@
 
 require_relative '../lib/game_of_life'
 
-raise RubyVersionException unless RUBY_VERSION == "1.9.3"
-
 GameOfLife::GameOfLifeWindow.new(800,600).show
 
