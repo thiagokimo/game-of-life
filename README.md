@@ -1,5 +1,6 @@
 The Game of Life
 ============
+![pictureGallery](https://photos-6.dropbox.com/t/0/AAB02tDagfMJ1zFpXa5UACS2oBrUOaqmtg_NbuhuBPk6gA/12/6313549/png/1024x768/3/1384398000/0/2/Screenshot%202013-11-13%2023.36.31.png/WNPIItGnmaZN0dGKymEGVoa2u1Qp7w_UKbk2UDutBYU "screenshot")
 
 Implementing Conway's Game of Life the TDD way, with Ruby :)
 I used **minitest** for testing and **gosu** to displaying the game on the screen.
@@ -20,3 +21,5 @@ before installing the game, you must install the libraries **libogg** and **libv
 On your terminal, run the command:
 
   > `game-of-life`
+
+Have fun!
