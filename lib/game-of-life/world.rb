@@ -122,12 +122,6 @@ module GameOfLife
       cell.dead? and live_neighbours.count == 3
     end
 
-    def rebuild_board(live_cells,dead_cells)
-      (live_cells+dead_cells).each do |cell|
-        @board.set(cell.x,cell.y,cell)
-      end
-    end
-
     def setup(random)
       @board = Matrix.build(@width, @height) { |row,column|
         if random
