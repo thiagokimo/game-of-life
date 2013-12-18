@@ -12,8 +12,8 @@ module GameOfLife
       self.caption = 'The Game of Life'
 
       # Variables
-      @num_columns = @width/5
-      @num_rows = @height/5
+      @num_columns = @width/9
+      @num_rows = @height/9
       @column_width = @width/@num_columns
       @row_height = @height/@num_rows
 
